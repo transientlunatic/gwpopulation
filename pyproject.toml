@@ -55,3 +55,6 @@ gwpopulation_cosmo = "gwpopulation.experimental.cosmo_models"
 [project.entry-points."gwpopulation.scs"]
 gwpopulation_mass = "gwpopulation.models.mass"
 gwpopulation_utils = "gwpopulation.utils"
+
+[project.entry-points."asimov.pipelines"]
+gwpopulation = "gwpopulation.asimov_interface:GWPopulation"
