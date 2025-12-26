@@ -95,6 +95,7 @@ class TestAsimovInterface(unittest.TestCase):
         
         # Create mock analyses
         mock_analysis = Mock()
+        mock_analysis.name = "test_analysis"
         mock_analysis.rundir = self.test_dir
         mock_analysis.pipeline = Mock()
         mock_analysis.pipeline.samples = Mock(return_value=['test.h5'])
@@ -106,6 +107,25 @@ class TestAsimovInterface(unittest.TestCase):
         self.assertIsInstance(posteriors, list)
         self.assertEqual(len(posteriors), 1)
         self.assertEqual(posteriors[0], 'test.h5')
+    
+    def test_posteriors_property_with_exception(self):
+        """Test posteriors property when samples() raises an exception."""
+        if not self.GWPopulation:
+            self.skipTest("GWPopulation not available")
+        
+        # Create mock analysis that raises an exception
+        mock_analysis = Mock()
+        mock_analysis.name = "failing_analysis"
+        mock_analysis.pipeline = Mock()
+        mock_analysis.pipeline.samples = Mock(side_effect=RuntimeError("Test error"))
+        
+        self.mock_production.analyses = [mock_analysis]
+        
+        pipeline = self.GWPopulation(self.mock_production)
+        # Should handle the exception gracefully and return empty list
+        posteriors = pipeline.posteriors
+        self.assertIsInstance(posteriors, list)
+        self.assertEqual(len(posteriors), 0)
     
     def test_events_property(self):
         """Test the events property."""
@@ -142,24 +162,37 @@ class TestAsimovInterface(unittest.TestCase):
         if not self.GWPopulation:
             self.skipTest("GWPopulation not available")
         
-        # Create a mock result file
-        result_file = os.path.join(self.test_dir, 'result.json')
+        # Create a mock result file (using the updated OUTPUT_FILE_NAMES)
+        result_file = os.path.join(self.test_dir, 'gwpopulation_result.json')
         with open(result_file, 'w') as f:
             f.write('{}')
         
         pipeline = self.GWPopulation(self.mock_production)
         self.assertTrue(pipeline.detect_completion())
     
-    def test_build_dag(self):
-        """Test DAG building."""
+    def test_build_dag_raises_not_implemented(self):
+        """Test that DAG building raises NotImplementedError."""
         if not self.GWPopulation:
             self.skipTest("GWPopulation not available")
         
         pipeline = self.GWPopulation(self.mock_production)
-        command = pipeline.build_dag()
         
-        self.assertIsInstance(command, list)
-        self.assertGreater(len(command), 0)
+        with self.assertRaises(NotImplementedError) as context:
+            pipeline.build_dag()
+        
+        self.assertIn("not implemented", str(context.exception).lower())
+    
+    def test_submit_dag_raises_not_implemented(self):
+        """Test that submit_dag raises NotImplementedError."""
+        if not self.GWPopulation:
+            self.skipTest("GWPopulation not available")
+        
+        pipeline = self.GWPopulation(self.mock_production)
+        
+        with self.assertRaises(NotImplementedError) as context:
+            pipeline.submit_dag()
+        
+        self.assertIn("not implemented", str(context.exception).lower())
     
     def test_collect_assets_empty(self):
         """Test asset collection with no files."""
@@ -177,8 +210,8 @@ class TestAsimovInterface(unittest.TestCase):
         if not self.GWPopulation:
             self.skipTest("GWPopulation not available")
         
-        # Create mock output files
-        result_file = os.path.join(self.test_dir, 'result.json')
+        # Create mock output files (using updated OUTPUT_FILE_NAMES)
+        result_file = os.path.join(self.test_dir, 'gwpopulation_result.json')
         with open(result_file, 'w') as f:
             f.write('{}')
         
@@ -186,8 +219,8 @@ class TestAsimovInterface(unittest.TestCase):
         assets = pipeline.collect_assets()
         
         self.assertIsInstance(assets, dict)
-        self.assertIn('result.json', assets)
-        self.assertEqual(assets['result.json'], result_file)
+        self.assertIn('gwpopulation_result.json', assets)
+        self.assertEqual(assets['gwpopulation_result.json'], result_file)
     
     def test_after_completion(self):
         """Test after_completion hook."""

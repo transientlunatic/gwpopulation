@@ -162,7 +162,7 @@ Both tools can be used together in larger projects.
 Notes
 -----
 
-* The asimov integration is designed to work with asimov v0.7 and later
+* The asimov integration is designed to work with the asimov ``v0.7-preview`` branch and the ``v0.7`` release (once available)
 * The pipeline assumes posterior samples are available in standard formats (HDF5, JSON, etc.)
 * Custom analysis scripts can be integrated by extending the ``GWPopulation`` class
 
