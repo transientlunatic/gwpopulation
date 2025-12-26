@@ -7,7 +7,6 @@ within the asimov framework.
 """
 
 import os
-from typing import Optional
 
 try:
     from asimov.pipeline import Pipeline
@@ -20,6 +19,22 @@ except ImportError:
         def __init__(self, production):
             self.production = production
             self.logger = None
+
+
+# Common posterior sample file names to look for
+POSTERIOR_FILE_NAMES = [
+    'posterior_samples.h5',
+    'result.json',
+    'posterior_samples.dat',
+    'posterior.h5',
+]
+
+# Common output file names from gwpopulation analyses
+OUTPUT_FILE_NAMES = [
+    'result.json',
+    'posterior_samples.dat',
+    'population_result.json',
+]
 
 
 class GWPopulation(Pipeline):
@@ -86,8 +101,7 @@ class GWPopulation(Pipeline):
                     # Look for common posterior file names
                     rundir = analysis.rundir
                     if rundir and os.path.isdir(rundir):
-                        for fname in ['posterior_samples.h5', 'result.json', 
-                                      'posterior_samples.dat', 'posterior.h5']:
+                        for fname in POSTERIOR_FILE_NAMES:
                             fpath = os.path.join(rundir, fname)
                             if os.path.exists(fpath):
                                 posterior_files.append(fpath)
@@ -123,11 +137,7 @@ class GWPopulation(Pipeline):
             return False
         
         # Look for common gwpopulation output files
-        output_files = [
-            os.path.join(rundir, 'result.json'),
-            os.path.join(rundir, 'posterior_samples.dat'),
-            os.path.join(rundir, 'population_result.json'),
-        ]
+        output_files = [os.path.join(rundir, fname) for fname in OUTPUT_FILE_NAMES]
         
         return any(os.path.exists(f) for f in output_files)
     
@@ -251,7 +261,9 @@ class GWPopulation(Pipeline):
                 try:
                     with open(fpath, 'r') as fh:
                         logs[fname] = fh.read()
-                except Exception:
+                except (IOError, OSError) as e:
+                    if self.logger:
+                        self.logger.warning(f"Failed to read log file {fname}: {e}")
                     continue
         
         return logs

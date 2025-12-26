@@ -3,7 +3,7 @@ Tests for the asimov interface.
 """
 
 import unittest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock
 import os
 import tempfile
 import shutil
