@@ -14,3 +14,4 @@ User Guide
     likelihood
     models
     selection
+    asimov

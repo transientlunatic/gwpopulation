@@ -9,8 +9,16 @@ This includes:
 - population models for gravitational-wave sources.
 - selection functions for gravitational-wave sources.
 - spectral siren cosmological inference with flat wCDM models.
+- integration with the asimov framework for pipeline management.
 """
 
 from . import conversions, hyperpe, models, utils, vt
 from ._version import __version__
 from .backend import SUPPORTED_BACKENDS, set_backend
+
+# Import asimov interface if available
+try:
+    from . import asimov_interface
+except ImportError:
+    # asimov not installed, that's fine
+    asimov_interface = None
